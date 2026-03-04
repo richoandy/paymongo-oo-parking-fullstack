@@ -1,0 +1,154 @@
+{
+  "info": {
+    "name": "OO Parking Lot API",
+    "description": "API collection for the Object-Oriented Mall parking allocation system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "parking_lot_id",
+      "value": "1"
+    },
+    {
+      "key": "vehicle_identifier",
+      "value": "ABC-1234"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/up",
+        "description": "Check if the API is running"
+      }
+    },
+    {
+      "name": "Parking Lots",
+      "item": [
+        {
+          "name": "Create Parking Lot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entry_points_count\": 3,\n  \"slot_distances\": [\n    [1, 4, 5],\n    [3, 2, 3],\n    [5, 1, 2],\n    [2, 3, 4],\n    [4, 5, 1]\n  ],\n  \"slot_sizes\": [0, 1, 2, 0, 2]\n}"
+            },
+            "url": "{{base_url}}/api/parking_lots",
+            "description": "Create a new parking lot. slot_sizes: 0=SP, 1=MP, 2=LP. slot_distances: [dist_A, dist_B, dist_C] per slot."
+          }
+        },
+        {
+          "name": "Get Parking Lot",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/parking_lots/{{parking_lot_id}}",
+            "description": "Get parking lot details by ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Parking",
+      "item": [
+        {
+          "name": "Park Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_size\": \"S\",\n  \"vehicle_identifier\": \"{{vehicle_identifier}}\",\n  \"entry_point\": 0\n}"
+            },
+            "url": "{{base_url}}/api/parking_lots/{{parking_lot_id}}/park",
+            "description": "Assign closest available slot. vehicle_size: S|M|L or 0|1|2. entry_point: 0-indexed (0=A, 1=B, 2=C)."
+          }
+        },
+        {
+          "name": "Park Vehicle (Medium)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_size\": \"M\",\n  \"vehicle_identifier\": \"XYZ-5678\",\n  \"entry_point\": 1\n}"
+            },
+            "url": "{{base_url}}/api/parking_lots/{{parking_lot_id}}/park",
+            "description": "Park a medium vehicle at entry point B"
+          }
+        },
+        {
+          "name": "Park Vehicle (Large)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_size\": 2,\n  \"vehicle_identifier\": \"LARGE-999\",\n  \"entry_point\": 2\n}"
+            },
+            "url": "{{base_url}}/api/parking_lots/{{parking_lot_id}}/park",
+            "description": "Park a large vehicle at entry point C (vehicle_size as integer)"
+          }
+        },
+        {
+          "name": "Unpark Vehicle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_identifier\": \"{{vehicle_identifier}}\"\n}"
+            },
+            "url": "{{base_url}}/api/parking_lots/{{parking_lot_id}}/unpark",
+            "description": "Release slot and return fee charged. Fee may be 0 if continuous rate applies (return within 1 hour)."
+          }
+        },
+        {
+          "name": "Get Vehicle Fee",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/parking_lots/{{parking_lot_id}}/vehicle/{{vehicle_identifier}}/fee",
+              "host": ["{{base_url}}"],
+              "path": ["api", "parking_lots", "{{parking_lot_id}}", "vehicle", "{{vehicle_identifier}}", "fee"]
+            },
+            "description": "Get vehicle info: running fee if parked, or history of finished sessions. Returns current_session (with running_fee) when parked, and history of all past sessions."
+          }
+        }
+      ]
+    }
+  ]
+}
