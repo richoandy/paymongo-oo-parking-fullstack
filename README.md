@@ -76,7 +76,7 @@ See [postman/README.md](postman/README.md) for Postman collection and example re
 
 | Event | Action | Session State |
 |-------|--------|---------------|
-| **Unpark** | Calculate fee, set `fee_charged`, return amount due | All sessions in chain: `fee_charged` set |
+| **Unpark** | Calculate fee, set `fee_charged` on current session, return amount due | Only the session being closed gets `fee_charged` = amount paid at that exit |
 | **Continuous rate** | If chain > 1, amount due = total − already paid | Return 0 when no additional charge |
 
 ---
@@ -95,7 +95,7 @@ See [postman/README.md](postman/README.md) for Postman collection and example re
 | Field | Active (parked) | Unparked |
 |-------|-----------------|----------|
 | `unparked_at` | nil | Set |
-| `fee_charged` | nil | Amount (total for chain) |
+| `fee_charged` | nil | Amount paid at that unpark (per session) |
 
 ---
 
@@ -110,7 +110,22 @@ See [postman/README.md](postman/README.md) for Postman collection and example re
 
 ---
 
-## 7. Key Rules
+## 7. Scenario: Flat Rate Covers Return Within 1 Hour
+
+1. **First session** – User parks for 1 hour and unparks.
+   - Total duration: 1 hour (within flat rate).
+   - **Pay 40 pesos** (3-hour flat rate) at unpark.
+
+2. **Same user returns** – Parks again within 1 hour of unparking, stays another 1 hour, then unparks.
+   - Combined stay: 2 hours (9:00–11:00).
+   - Total fee for 2 hours: 40 pesos (still within flat rate).
+   - **Pay 0 pesos** at second unpark – the first session already charged the 3-hour flat rate, which covers the full 2 hours.
+
+**Why?** Return within 1 hour is treated as a single continuous stay. The fee is computed on the full combined duration. Since the user already paid 40 at the first unpark, no additional charge is due at the second unpark.
+
+---
+
+## 8. Key Rules
 
 1. **Immediate charge**: Vehicle always pays when unparking; fee is calculated and paid immediately.
 2. **Rounding**: Hours are always rounded up (e.g., 6.4 → 7).

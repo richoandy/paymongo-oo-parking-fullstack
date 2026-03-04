@@ -121,6 +121,21 @@ class ParkingFeeCalculatorTest < ActiveSupport::TestCase
     assert_equal 2, result[:duration_hours]
   end
 
+  test "README scenario: park 1h pay flat rate, return 1h pay 0 (flat rate covers both)" do
+    # First session: park 1h, unpark, pay 40 (3-hour flat rate).
+    # Second session: return within 1h, park 1h, unpark.
+    # Combined 2h still within flat rate. Already paid 40 at first unpark. Amount due = 0.
+    base = 0
+    periods = [
+      { parked_at: base, unparked_at: base + 3600, fee_charged: 40 },
+      { parked_at: base + 3600, unparked_at: base + 7200, fee_charged: nil }
+    ]
+    result = ParkingFeeCalculator.compute_continuous_fee(periods: periods, slot_size: 0)
+    assert_equal 40, result[:total_fee], "Total fee for 2h should be 40 (flat rate)"
+    assert_equal 0, result[:amount_due], "No additional charge: first session already paid flat rate"
+    assert_equal 2, result[:duration_hours], "Combined duration should be 2 hours"
+  end
+
   test "abuse prevention: 2h59m + 2h59m within 1hr gap = 6 hrs, pay 100 total, 60 due" do
     # First stay 2h59m (3 hrs rounded) = 40. Second unpark: total 6 hrs = 100. Already paid 40. Due 60.
     base = 0
