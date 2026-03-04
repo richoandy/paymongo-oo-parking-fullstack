@@ -125,7 +125,17 @@ See [postman/README.md](postman/README.md) for Postman collection and example re
 
 ---
 
-## 8. Key Rules
+## 8. Why `compute_continuous_fee`?
+
+The continuous rate logic serves two purposes:
+
+1. **Blocks abuse** – Drivers cannot game the system by repeatedly leaving and returning within 1 hour to stay indefinitely at the flat rate. The fee is based on the **total combined duration** of all periods in the chain. Example: 2h59m + 2h59m (return within 1h) = 6 hours total → pay 100, not 40+40.
+
+2. **Fair to legitimate users** – A driver who pays the full 3-hour flat rate for 1 hour, exits, and returns to park again within 1 hour is not penalized. They already paid 40 for the first 3 hours. The combined stay (e.g. 2 hours) stays within that flat rate, so they pay 0 at the second unpark. The system does not charge them again for time already covered.
+
+---
+
+## 9. Key Rules
 
 1. **Immediate charge**: Vehicle always pays when unparking; fee is calculated and paid immediately.
 2. **Rounding**: Hours are always rounded up (e.g., 6.4 → 7).
